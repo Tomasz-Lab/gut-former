@@ -2,7 +2,7 @@
 name = "microbiome-gpt"
 version = "0.1.0"
 description = "MicrobiomeGPT by TomaszLab"
-authors = ["Wojciech Nowak"]
+authors = ["Zuzanna Karwowska, Tomasz Kościółek, Wojciech Nowak"]
 packages = [{include = "microbiome-gpt", from = "src"}]
 
 [tool.poetry.scripts]
