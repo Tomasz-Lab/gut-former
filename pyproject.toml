@@ -1,0 +1,52 @@
+[tool.poetry]
+name = "microbiome-gpt"
+version = "0.1.0"
+description = "MicrobiomeGPT by TomaszLab"
+authors = ["Zuzanna Karwowska, Tomasz Kościółek, Wojciech Nowak"]
+packages = [{include = "microbiome-gpt", from = "src"}]
+
+[tool.poetry.scripts]
+microbiome-gpt = "microbiome-gpt.main:main"
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.15"
+torch = "^2.10.0"
+numpy = "^2.4.1"
+pandas = "^3.0.0"
+scikit-learn = "^1.8.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "ruff (>=0.14.0,<0.15.0)",
+    "mypy (>=1.19.0,<2.0.0)",
+    "jupyter (>=1.1.0,<2.0.0)",
+    "ipykernel (>=7.1.0,<8.0.0)"
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "I",    # isort (import sorting)
+    "B",    # bugbear (common bugs)
+    "UP",   # pyupgrade (modern Python syntax)
+]
+ignore = ["E501"]  # Let formatter handle line length
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = false
+check_untyped_defs = true
