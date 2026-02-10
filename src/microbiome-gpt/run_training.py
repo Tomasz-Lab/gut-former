@@ -1,23 +1,32 @@
 import json
 import torch
 import argparse
+import logging
 
 import numpy as np
 import pandas as pd
-
+from datetime import date
 
 from loss import CompositeLoss
 from model import BacteriaModel
 from dataset import BacteriaDataset
+from utils.project_paths import find_data_path, find_output_path
+from utils.log_config import setup_logging
 
-from datetime import date
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 from torch.nn.functional import mse_loss
 from sklearn.model_selection import train_test_split
 
+log = logging.getLogger(__name__)
+
 def main():
+    # Setting up project
+    setup_logging()
+
+    log.info("Starting training script..\n ")
     # Handling Args
+
     p = argparse.ArgumentParser()
 
     p.add_argument("--dataset", type=str, default="sample_train", help="TODO")
@@ -26,13 +35,15 @@ def main():
     p.add_argument("--batch_size", type=int, default=16, help="TODO")
     p.add_argument("--learning_rate", type=float, default=1.893292917167e-4, help="TODO")
     p.add_argument("--epochs", type=int, default=55, help="TODO")
+    p.add_argument("--verbose", type=bool, default=True, help="TODO")
 
     today_str = date.today().strftime("%Y%m%d")
-    p.add_argument("--checkpoint", type=str, default=f"../../data/{today_str}_checkpoint.pt", help="TODO")
+    output_path = find_output_path()
+    p.add_argument("--checkpoint", type=str, default=f"{output_path}/{today_str}_checkpoint.pt", help="TODO")
     args = p.parse_args()
 
     # Loading & Preparing Data
-    data_path = f"../../data"
+    data_path = find_data_path()
     Xt_df = pd.read_csv(f"{data_path}/taxonomy_{args.dataset}.csv", index_col=[0], low_memory=False).fillna(0).sort_index() * 100
     Xp_df = pd.read_csv(f"{data_path}/pathways_{args.dataset}.csv", index_col=[0], low_memory=False).fillna(0).sort_index() * 100
 
@@ -59,7 +70,18 @@ def main():
     optimizer = Adam(model.parameters(), lr=args.learning_rate, weight_decay=0.001)
     composite_loss = CompositeLoss()
 
+    total_params = sum(p.numel() for p in model.parameters())
+    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+    log.info(
+        "Model summary:\n"
+        "  - Total params:      %d\n"
+        "  - Trainable params:  %d\n",
+        total_params, trainable_params
+    )
+
     # Training Model
+    history = []
     for epoch in range(args.epochs):
         model.train()
 
@@ -107,19 +129,36 @@ def main():
                 test_t_mse += mse_loss(Xt_pred, Xt_b).item() * batch_size
                 test_p_mse += mse_loss(Xp_pred, Xp_b).item() * batch_size
 
+        epoch_metrics = {
+            "epoch": epoch,
+            "train_loss": train_loss / train_n_samples,
+            "train_taxonomy_mse": train_t_mse / train_n_samples,
+            "train_pathways_mse": train_p_mse / train_n_samples,
+            "test_loss": test_loss / test_n_samples,
+            "test_taxonomy_mse": test_t_mse / test_n_samples,
+            "test_pathways_mse": test_p_mse / test_n_samples,  # <- note: use test_p_mse here
+        }
+        history.append(epoch_metrics)
 
         if epoch % 10 == 1:
-            print(f"Epoch: {epoch}")
-            print(f"Train Loss: {train_loss / train_n_samples:.3f}")
-            print(f"Train Taxonomy MSE: {train_t_mse / train_n_samples:.3f}")
-            print(f"Train Pathways MSE: {train_p_mse / train_n_samples:.3f}")
-            print(f"Test Loss: {test_loss / test_n_samples:.3f}")
-            print(f"Test Taxonomy MSE: {test_t_mse / test_n_samples:.3f}")
-            print(f"Test Pathways MSE: {test_t_mse / test_n_samples:.3f}")
-
+            log.info(f"Epoch: {epoch} -> Test Loss: {test_loss:.3f}")
             torch.save(model.state_dict, args.checkpoint)
 
+    stats_path = f"{output_path}/{today_str}_training_stats.csv"
+    stats_cols = [
+        "epoch", "train_loss", "train_taxonomy_mse", "train_pathways_mse",
+        "test_loss", "test_taxonomy_mse", "test_pathways_mse",
+    ]
+
+    stats_df = pd.DataFrame(history, columns=stats_cols)
+    stats_df.to_csv(stats_path, index=False)
+
     torch.save(model.state_dict, args.checkpoint)
+    log.info("\nTraining completed.\n"
+             "Saved outputs:\n"
+             "  - Training stats: %s\n"
+             "  - Model checkpoint: %s\n",
+             stats_path, args.checkpoint)
 
 if __name__ == "__main__":
     main()
