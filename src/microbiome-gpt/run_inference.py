@@ -1,22 +1,33 @@
-import json
 import torch
 import argparse
+import logging
 
 import pandas as pd
 from model import BacteriaModel
 
+from utils.project_paths import find_data_path, find_output_path
+from utils.log_config import setup_logging
+
+log = logging.getLogger(__name__)
+
 def main():
+    # Setting up project
+    setup_logging()
+
+    log.info("Starting inference script..\n ")
+
     # Handling Args
     p = argparse.ArgumentParser()
 
     p.add_argument("--dataset", type=str, default="sample_train", help="TODO")
     p.add_argument("--embedding_dim", type=int, default=128, help="TODO")
     p.add_argument("--latent_dim", type=int, default=64, help="TODO")
-    p.add_argument("--checkpoint", type=str, default="../../data/checkpoint_sample.pt", help="TODO")
+    output_path = find_output_path()
+    p.add_argument("--checkpoint", type=str, default=f"{output_path}/checkpoint_sample.pt", help="TODO")
     args = p.parse_args()
 
     # Loading & Preparing Data
-    data_path = f"../../data"
+    data_path = find_data_path()
     t_df = pd.read_csv(f"{data_path}/taxonomy_{args.dataset}.csv", index_col=[0], low_memory=False).fillna(0).sort_index() * 100
     p_df = pd.read_csv(f"{data_path}/pathways_{args.dataset}.csv", index_col=[0], low_memory=False).fillna(0).sort_index() * 100
 
@@ -29,6 +40,7 @@ def main():
         p_df.shape[1], t_df.shape[1], args.embedding_dim, args.latent_dim,
     ).to(DEVICE)
 
+    log.info("Recreating model from checkpoint: %s\n", args.checkpoint)
     checkpoint_dict = torch.load(args.checkpoint, weights_only=True)
     model.load_state_dict(checkpoint_dict, strict=False)
     model.eval()
@@ -37,14 +49,29 @@ def main():
     # Inference
     t_pred, p_pred, latent = model(p_tensor, t_tensor)
 
-    # Storing predictions
-    t_pred_df = pd.DataFrame(t_pred.detach().cpu().numpy().squeeze(-1), index=t_df.index)
+    # Storing outputs
+    t_pred_df = pd.DataFrame(t_pred.detach().cpu().numpy().squeeze(-1), index=t_df.index, columns=t_df.columns)
     t_pred_df.index.name = t_df.index.name
-    t_pred_df.to_csv(f"{data_path}/output/pred_taxonomy_{args.dataset}.csv", index=True)
+    t_output_path = f"{output_path}/pred_taxonomy_{args.dataset}.csv"
+    t_pred_df.to_csv(t_output_path, index=True)
 
-    p_pred_df = pd.DataFrame(p_pred.detach().cpu().numpy().squeeze(-1), index=t_df.index)
+    p_pred_df = pd.DataFrame(p_pred.detach().cpu().numpy().squeeze(-1), index=p_df.index, columns=p_df.columns)
     p_pred_df.index.name = p_df.index.name
-    p_pred_df.to_csv(f"{data_path}/output/pred_pathways_{args.dataset}.csv", index=True)
+    p_output_path = f"{output_path}/pred_pathways_{args.dataset}.csv"
+    p_pred_df.to_csv(p_output_path, index=True)
+
+    latent_cols = [f"z{i}" for i in range(args.latent_dim)]
+    latent_df = pd.DataFrame(latent.detach().cpu().numpy(), index=p_df.index, columns=latent_cols)
+    latent_df.index.name = t_df.index.name
+    latent_output_path = f"{output_path}/latent_{args.dataset}.csv"
+    latent_df.to_csv(latent_output_path, index=True)
+
+    log.info("Inference completed.\n"
+             "Saved outputs:\n"
+             "  - Latent: %s\n"
+             "  - P_pred:  %s\n"
+             "  - T_pred:  %s",
+             latent_output_path, p_output_path, t_output_path)
 
 if __name__ == "__main__":
     main()
