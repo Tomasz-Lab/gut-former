@@ -29,7 +29,7 @@ def main():
 
     p = argparse.ArgumentParser()
 
-    p.add_argument("--dataset", type=str, default="sample_train", help="TODO")
+    p.add_argument("--dataset", type=str, default="sample", help="TODO")
     p.add_argument("--embedding_dim", type=int, default=128, help="TODO")
     p.add_argument("--latent_dim", type=int, default=64, help="TODO")
     p.add_argument("--batch_size", type=int, default=16, help="TODO")
