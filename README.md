@@ -19,7 +19,7 @@ make install
 ## ▶️ Running the Project
 
 ```bash
-poetry run microbiome-gpt
+poetry run microbiome_gpt
 ```
 
 ## 🔧 Troubleshooting

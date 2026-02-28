@@ -3,7 +3,7 @@ name = "microbiome-gpt"
 version = "0.1.0"
 description = "MicrobiomeGPT by TomaszLab"
 authors = ["Zuzanna Karwowska, Tomasz Kościółek, Wojciech Nowak"]
-packages = [{include = "microbiome-gpt", from = "src"}]
+packages = [{include = "microbiome_gpt", from = "src"}]
 
 [tool.poetry.scripts]
 microbiome-gpt = "microbiome-gpt.main:main"
@@ -14,6 +14,11 @@ torch = "^2.10.0"
 numpy = "^2.4.1"
 pandas = "^3.0.0"
 scikit-learn = "^1.8.0"
+matplotlib = "^3.10.8"
+seaborn = "^0.13.2"
+torchmetrics = "^1.8.2"
+scikit-bio = "^0.7.2"
+optuna = "^4.7.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
