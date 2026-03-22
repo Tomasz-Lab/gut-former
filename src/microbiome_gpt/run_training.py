@@ -12,11 +12,11 @@ from model import BacteriaModel
 from dataset import BacteriaDataset
 from utils.project_paths import find_data_path, find_output_path
 from utils.log_config import setup_logging
+from utils.data_prep import train_val_split
 
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 from torch.nn.functional import mse_loss
-from sklearn.model_selection import train_test_split
 
 log = logging.getLogger(__name__)
 
@@ -47,13 +47,8 @@ def main():
     Xt_df = pd.read_csv(f"{data_path}/taxonomy_{args.dataset}.csv", index_col=[0], low_memory=False).fillna(0).sort_index() * 100
     Xp_df = pd.read_csv(f"{data_path}/pathways_{args.dataset}.csv", index_col=[0], low_memory=False).fillna(0).sort_index() * 100
 
-    idx_train, idx_test = train_test_split(Xt_df.index, test_size=0.1, random_state=0)
-
-    def split_df(df):
-        return df.loc[idx_train], df.loc[idx_test]
-
-    Xt_train, Xt_test = split_df(Xt_df)
-    Xp_train, Xp_test = split_df(Xp_df)
+    Xt_train, Xt_test = train_val_split(Xt_df)
+    Xp_train, Xp_test = train_val_split(Xp_df)
 
     train_dataset = BacteriaDataset(Xt_train, Xp_train)
     train_dloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
