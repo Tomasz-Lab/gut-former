@@ -144,7 +144,7 @@ def main():
 
         if epoch % 10 == 1:
             log.info(f"Epoch: {epoch} -> Test Loss: {test_loss:.3f}")
-            torch.save(model.state_dict, checkpoint_path)
+            torch.save(model.state_dict(), checkpoint_path)
 
     stats_cols = [
         "epoch", "train_loss", "train_taxonomy_mse", "train_pathways_mse",
@@ -154,7 +154,7 @@ def main():
     stats_df = pd.DataFrame(history, columns=stats_cols)
     stats_df.to_csv(stats_path, index=False)
 
-    torch.save(model.state_dict, checkpoint_path)
+    torch.save(model.state_dict(), checkpoint_path)
     log.info("\nTraining completed.\n"
              "Saved outputs:\n"
              "  - Training stats: %s\n"
