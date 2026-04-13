@@ -23,3 +23,7 @@ def find_data_path(*parts: str) -> Path:
 def find_output_path(*parts: str) -> Path:
     """Path to the project's output directory (optionally joined with subpaths)."""
     return find_project_root() / "output" / Path(*parts)
+
+def find_figures_path(*parts: str) -> Path:
+    """Path to the project's figures directory (optionally joined with subpaths)."""
+    return find_project_root() / "figures" / Path(*parts)
