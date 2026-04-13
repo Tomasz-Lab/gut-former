@@ -3,10 +3,10 @@ import argparse
 import logging
 
 import pandas as pd
-from model import BacteriaModel
+from microbiome_gpt.model import BacteriaModel
 
-from utils.project_paths import find_data_path, find_output_path
-from utils.log_config import setup_logging
+from microbiome_gpt.utils.project_paths import find_data_path, find_output_path
+from microbiome_gpt.utils.log_config import setup_logging
 
 log = logging.getLogger(__name__)
 

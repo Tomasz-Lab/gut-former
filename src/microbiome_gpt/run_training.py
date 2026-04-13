@@ -7,16 +7,16 @@ import numpy as np
 import pandas as pd
 from datetime import date
 
-from loss import CompositeLoss
-from model import BacteriaModel
-from dataset import BacteriaDataset
-from utils.project_paths import find_data_path, find_output_path
-from utils.log_config import setup_logging
+from microbiome_gpt.loss import CompositeLoss
+from microbiome_gpt.model import BacteriaModel
+from microbiome_gpt.dataset import BacteriaDataset
+from microbiome_gpt.utils.project_paths import find_data_path, find_output_path
+from microbiome_gpt.utils.log_config import setup_logging
+from microbiome_gpt.utils.data_prep import train_val_split
 
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 from torch.nn.functional import mse_loss
-from sklearn.model_selection import train_test_split
 
 log = logging.getLogger(__name__)
 
@@ -37,23 +37,21 @@ def main():
     p.add_argument("--epochs", type=int, default=55, help="TODO")
     p.add_argument("--verbose", type=bool, default=True, help="TODO")
 
+    p.add_argument("--checkpoint", type=str, default=None, help="Path to checkpoint to resume training from")
+    args = p.parse_args()
+
     today_str = date.today().strftime("%Y%m%d")
     output_path = find_output_path()
-    p.add_argument("--checkpoint", type=str, default=f"{output_path}/{today_str}_checkpoint.pt", help="TODO")
-    args = p.parse_args()
+    checkpoint_path = f"{output_path}/{today_str}_{args.dataset}_checkpoint.pt"
+    stats_path = f"{output_path}/{today_str}_{args.dataset}_training_stats.csv"
 
     # Loading & Preparing Data
     data_path = find_data_path()
     Xt_df = pd.read_csv(f"{data_path}/taxonomy_{args.dataset}.csv", index_col=[0], low_memory=False).fillna(0).sort_index() * 100
     Xp_df = pd.read_csv(f"{data_path}/pathways_{args.dataset}.csv", index_col=[0], low_memory=False).fillna(0).sort_index() * 100
 
-    idx_train, idx_test = train_test_split(Xt_df.index, test_size=0.1, random_state=0)
-
-    def split_df(df):
-        return df.loc[idx_train], df.loc[idx_test]
-
-    Xt_train, Xt_test = split_df(Xt_df)
-    Xp_train, Xp_test = split_df(Xp_df)
+    Xt_train, Xt_test = train_val_split(Xt_df)
+    Xp_train, Xp_test = train_val_split(Xp_df)
 
     train_dataset = BacteriaDataset(Xt_train, Xp_train)
     train_dloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
@@ -69,6 +67,10 @@ def main():
 
     optimizer = Adam(model.parameters(), lr=args.learning_rate, weight_decay=0.001)
     composite_loss = CompositeLoss()
+
+    if args.checkpoint:
+        model.load_state_dict(torch.load(args.checkpoint, map_location=DEVICE))
+        log.info("Resumed from checkpoint: %s", args.checkpoint)
 
     total_params = sum(p.numel() for p in model.parameters())
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -142,9 +144,8 @@ def main():
 
         if epoch % 10 == 1:
             log.info(f"Epoch: {epoch} -> Test Loss: {test_loss:.3f}")
-            torch.save(model.state_dict, args.checkpoint)
+            torch.save(model.state_dict(), checkpoint_path)
 
-    stats_path = f"{output_path}/{today_str}_training_stats.csv"
     stats_cols = [
         "epoch", "train_loss", "train_taxonomy_mse", "train_pathways_mse",
         "test_loss", "test_taxonomy_mse", "test_pathways_mse",
@@ -153,12 +154,12 @@ def main():
     stats_df = pd.DataFrame(history, columns=stats_cols)
     stats_df.to_csv(stats_path, index=False)
 
-    torch.save(model.state_dict, args.checkpoint)
+    torch.save(model.state_dict(), checkpoint_path)
     log.info("\nTraining completed.\n"
              "Saved outputs:\n"
              "  - Training stats: %s\n"
              "  - Model checkpoint: %s\n",
-             stats_path, args.checkpoint)
+             stats_path, checkpoint_path)
 
 if __name__ == "__main__":
     main()
