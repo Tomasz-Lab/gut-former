@@ -7,12 +7,12 @@ import numpy as np
 import pandas as pd
 from datetime import date
 
-from loss import CompositeLoss
-from model import BacteriaModel
-from dataset import BacteriaDataset
-from utils.project_paths import find_data_path, find_output_path
-from utils.log_config import setup_logging
-from utils.data_prep import train_val_split
+from microbiome_gpt.loss import CompositeLoss
+from microbiome_gpt.model import BacteriaModel
+from microbiome_gpt.dataset import BacteriaDataset
+from microbiome_gpt.utils.project_paths import find_data_path, find_output_path
+from microbiome_gpt.utils.log_config import setup_logging
+from microbiome_gpt.utils.data_prep import train_val_split
 
 from torch.optim import Adam
 from torch.utils.data import DataLoader
