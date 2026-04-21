@@ -1,11 +1,11 @@
-# GutFormer
+# GUT-FORMer
 
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License](https://img.shields.io/badge/license-BSD_3--Clause-green)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.x-orange)
 ![Ruff](https://img.shields.io/badge/code_style-ruff-purple)
 
-GutFormer is a Transformer-based model that jointly encodes microbiome taxonomy (which organisms are present) and functional pathways (what they are doing) into a shared latent space. It learns to reconstruct both modalities simultaneously, enabling cross-modal prediction and compact microbiome embeddings.
+GUT-FORMer is a Transformer-based model that jointly encodes microbiome taxonomy (which organisms are present) and functional pathways (what they are doing) into a shared latent space. It learns to reconstruct both modalities simultaneously, enabling cross-modal prediction and compact microbiome embeddings.
 
 Developed by TomaszLab.
 
