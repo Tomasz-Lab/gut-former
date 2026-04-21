@@ -1,6 +1,11 @@
-# MicrobiomeGPT
+# GutFormer
 
-MicrobiomeGPT is a Transformer-based model that jointly encodes microbiome taxonomy (which organisms are present) and functional pathways (what they are doing) into a shared latent space. It learns to reconstruct both modalities simultaneously, enabling cross-modal prediction and compact microbiome embeddings.
+![Python](https://img.shields.io/badge/python-3.12-blue)
+![License](https://img.shields.io/badge/license-BSD_3--Clause-green)
+![PyTorch](https://img.shields.io/badge/PyTorch-2.x-orange)
+![Ruff](https://img.shields.io/badge/code_style-ruff-purple)
+
+GutFormer is a Transformer-based model that jointly encodes microbiome taxonomy (which organisms are present) and functional pathways (what they are doing) into a shared latent space. It learns to reconstruct both modalities simultaneously, enabling cross-modal prediction and compact microbiome embeddings.
 
 Developed by TomaszLab.
 
@@ -40,7 +45,7 @@ A sample dataset (`--dataset sample`) is included in the repository to get start
 ### Train from scratch
 
 ```bash
-poetry run python src/microbiome_gpt/run_training.py
+poetry run python src/gut_former/run_training.py
 ```
 
 **Options:**
@@ -63,7 +68,7 @@ poetry run python src/microbiome_gpt/run_training.py
 Continue training from an existing checkpoint (replace the checkpoint path with your own):
 
 ```bash
-nohup poetry run python src/microbiome_gpt/run_training.py \
+nohup poetry run python src/gut_former/run_training.py \
   --dataset my_dataset \
   --epochs 1000 \
   --checkpoint output/{date}_{dataset}_checkpoint.pt \
@@ -79,7 +84,7 @@ tail -f output/training.log
 ### Inference
 
 ```bash
-poetry run python src/microbiome_gpt/run_inference.py \
+poetry run python src/gut_former/run_inference.py \
   --dataset sample \
   --checkpoint output/20260412_sample_checkpoint.pt
 ```
@@ -94,7 +99,7 @@ poetry run python src/microbiome_gpt/run_inference.py \
 NMF decomposes microbiome data into latent signatures. Supports both pathway and taxonomy data, with optional filtering by health status.
 
 ```bash
-poetry run python src/microbiome_gpt/nmf/run_nmf.py --type pathways --dataset sample
+poetry run python src/gut_former/nmf/run_nmf.py --type pathways --dataset sample
 ```
 
 **Options:**
@@ -111,10 +116,10 @@ poetry run python src/microbiome_gpt/nmf/run_nmf.py --type pathways --dataset sa
 
 ```bash
 # Pathway NMF, all samples
-poetry run python src/microbiome_gpt/nmf/run_nmf.py --type pathways --dataset sample
+poetry run python src/gut_former/nmf/run_nmf.py --type pathways --dataset sample
 
 # Taxonomy NMF, healthy samples only
-poetry run python src/microbiome_gpt/nmf/run_nmf.py --type taxonomy --dataset sample --filter healthy
+poetry run python src/gut_former/nmf/run_nmf.py --type taxonomy --dataset sample --filter healthy
 ```
 
 **Outputs** saved to `output/nmf/`:
@@ -128,7 +133,7 @@ poetry run python src/microbiome_gpt/nmf/run_nmf.py --type taxonomy --dataset sa
 Bi-Cross-Validation selects the optimal number of NMF signatures for pathway data by evaluating reconstruction quality on held-out data blocks across a range of ranks. For taxonomy, the number of signatures is established in the literature.
 
 ```bash
-poetry run python src/microbiome_gpt/nmf/run_bicv.py --dataset sample
+poetry run python src/gut_former/nmf/run_bicv.py --dataset sample
 ```
 
 **Options:**

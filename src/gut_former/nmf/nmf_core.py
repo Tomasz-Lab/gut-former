@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.decomposition import non_negative_factorization
 
-from microbiome_gpt.utils.metrics import cos_sim, exp_var
+from gut_former.utils.metrics import cos_sim, exp_var
 
 log = logging.getLogger(__name__)
 

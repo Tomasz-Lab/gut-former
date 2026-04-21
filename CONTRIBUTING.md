@@ -27,5 +27,5 @@ make kernel   # Register kernel (one time)
 make jupyter  # Launch Jupyter
 ```
 
-Select kernel "Python (microbiome-gpt)" in your notebook.
+Select kernel "Python (gut-former)" in your notebook.
 

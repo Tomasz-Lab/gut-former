@@ -4,10 +4,10 @@ import time
 
 import numpy as np
 import pandas as pd
-from microbiome_gpt.utils.project_paths import find_data_path, find_output_path
-from microbiome_gpt.utils.log_config import setup_logging
-from microbiome_gpt.utils.metrics import cos_sim, exp_var, rss as calc_rss, l2norm as calc_l2norm
-from microbiome_gpt.nmf.nmf_core import nmf
+from gut_former.utils.project_paths import find_data_path, find_output_path
+from gut_former.utils.log_config import setup_logging
+from gut_former.utils.metrics import cos_sim, exp_var, rss as calc_rss, l2norm as calc_l2norm
+from gut_former.nmf.nmf_core import nmf
 
 log = logging.getLogger(__name__)
 

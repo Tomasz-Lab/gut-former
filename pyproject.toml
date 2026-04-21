@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "microbiome-gpt"
+name = "gut-former"
 version = "0.1.0"
-description = "MicrobiomeGPT by TomaszLab"
+description = "GutFormer by TomaszLab"
 authors = ["Zuzanna Karwowska, Tomasz Kościółek, Wojciech Nowak"]
-packages = [{include = "microbiome_gpt", from = "src"}]
+packages = [{include = "gut_former", from = "src"}]
 
 [tool.poetry.scripts]
-microbiome-gpt = "microbiome-gpt.main:main"
+gut-former = "gut-former.main:main"
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.15"
