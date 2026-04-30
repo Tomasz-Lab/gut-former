@@ -1,7 +1,7 @@
 # GUT-FORMer
 
 ![Python](https://img.shields.io/badge/python-3.12-blue)
-![License](https://img.shields.io/badge/license-BSD_3--Clause-green)
+![License](https://img.shields.io/badge/License-CC_BY_NC_SA_4.0-green)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.x-orange)
 ![Ruff](https://img.shields.io/badge/code_style-ruff-purple)
 
