@@ -15,7 +15,7 @@ def main():
     # Handling Args
     p = argparse.ArgumentParser()
 
-    p.add_argument("--dataset", type=str, default="raw", help="TODO")
+    p.add_argument("--dataset", type=str, default="raw", help="Dataset name; expects taxonomy_relab_{dataset}.csv, pathways_relab_{dataset}.csv, and metadata_{dataset}.csv in the data directory, with sample ID as the (optionally unnamed) first column")
 
     args = p.parse_args()
 
