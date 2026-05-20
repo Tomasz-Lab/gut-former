@@ -29,13 +29,12 @@ def main():
 
     p = argparse.ArgumentParser()
 
-    p.add_argument("--dataset", type=str, default="sample", help="TODO")
-    p.add_argument("--embedding_dim", type=int, default=128, help="TODO")
-    p.add_argument("--latent_dim", type=int, default=64, help="TODO")
-    p.add_argument("--batch_size", type=int, default=16, help="TODO")
-    p.add_argument("--learning_rate", type=float, default=1.893292917167e-4, help="TODO")
-    p.add_argument("--epochs", type=int, default=55, help="TODO")
-    p.add_argument("--verbose", type=bool, default=True, help="TODO")
+    p.add_argument("--dataset", type=str, default="sample", help="Dataset name; expects taxonomy_{dataset}.csv, pathways_{dataset}.csv, and metadata_{dataset}.csv in the data directory, with sample ID as the (optionally unnamed) first column")
+    p.add_argument("--embedding_dim", type=int, default=128, help="Embedding dimension for the model")
+    p.add_argument("--latent_dim", type=int, default=64, help="Latent space dimension; controls the size of the learned representation")
+    p.add_argument("--batch_size", type=int, default=16, help="Mini-batch size for training")
+    p.add_argument("--learning_rate", type=float, default=1.893292917167e-4, help="Learning rate for the Adam optimizer")
+    p.add_argument("--epochs", type=int, default=55, help="Number of training epochs")
 
     p.add_argument("--checkpoint", type=str, default=None, help="Path to checkpoint to resume training from")
     args = p.parse_args()

@@ -54,7 +54,7 @@ fix:
 # -----------------------------------------
 
 kernel:
-	poetry run python -m ipykernel install --user --name=microbiome-gpt --display-name "Python (microbiome-gpt)"
+	poetry run python -m ipykernel install --user --name=gut-former --display-name "Python (gut-former)"
 
 jupyter:
 	poetry run jupyter notebook

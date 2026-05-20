@@ -19,11 +19,11 @@ def main():
     # Handling Args
     p = argparse.ArgumentParser()
 
-    p.add_argument("--dataset", type=str, default="sample", help="TODO")
-    p.add_argument("--embedding_dim", type=int, default=128, help="TODO")
-    p.add_argument("--latent_dim", type=int, default=64, help="TODO")
+    p.add_argument("--dataset", type=str, default="sample", help="Dataset name; expects taxonomy_{dataset}.csv and pathways_{dataset}.csv in the data directory, with sample ID as the (optionally unnamed) first column")
+    p.add_argument("--embedding_dim", type=int, default=128, help="Embedding dimension for the model")
+    p.add_argument("--latent_dim", type=int, default=64, help="Latent space dimension; controls the size of the learned representation")
     output_path = find_output_path()
-    p.add_argument("--checkpoint", type=str, default=f"{output_path}/checkpoint_sample.pt", help="TODO")
+    p.add_argument("--checkpoint", type=str, default=f"{output_path}/checkpoint_sample.pt", help="Path to model checkpoint file to load for inference")
     args = p.parse_args()
 
     # Loading & Preparing Data
