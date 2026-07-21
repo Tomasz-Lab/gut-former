@@ -1,6 +1,7 @@
 import torch
 from torch.utils.data import Dataset
 
+
 class BacteriaDataset(Dataset):
     def __init__(self, taxonomy, pathways):
         self.taxonomy = torch.tensor(taxonomy.values).float().unsqueeze(-1)

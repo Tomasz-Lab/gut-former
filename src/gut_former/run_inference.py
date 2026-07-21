@@ -1,12 +1,12 @@
-import torch
 import argparse
 import logging
 
 import pandas as pd
-from gut_former.model import BacteriaModel
+import torch
 
-from gut_former.utils.project_paths import find_data_path, find_output_path
+from gut_former.model import BacteriaModel
 from gut_former.utils.log_config import setup_logging
+from gut_former.utils.project_paths import find_data_path, find_output_path
 
 log = logging.getLogger(__name__)
 

@@ -1,11 +1,12 @@
 import matplotlib as mpl
 import seaborn as sns
 
+
 def apply_style(
-    font_family="DejaVu Sans",
-    base_font_size=12,
-    style="whitegrid",
-):
+    font_family: str = "DejaVu Sans",
+    base_font_size: int = 12,
+    style = "whitegrid",
+) -> None:
     rc = {
         "font.family": font_family,
         "font.size": base_font_size,

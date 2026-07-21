@@ -1,13 +1,16 @@
-import logging
 import argparse
+import logging
 import time
 
 import numpy as np
 import pandas as pd
-from gut_former.utils.project_paths import find_data_path, find_output_path
-from gut_former.utils.log_config import setup_logging
-from gut_former.utils.metrics import cos_sim, exp_var, rss as calc_rss, l2norm as calc_l2norm
+
 from gut_former.nmf.nmf_core import nmf
+from gut_former.utils.log_config import setup_logging
+from gut_former.utils.metrics import cos_sim, exp_var
+from gut_former.utils.metrics import l2norm as calc_l2norm
+from gut_former.utils.metrics import rss as calc_rss
+from gut_former.utils.project_paths import find_data_path, find_output_path
 
 log = logging.getLogger(__name__)
 

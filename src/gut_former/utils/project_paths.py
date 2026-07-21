@@ -1,5 +1,6 @@
 from pathlib import Path
 
+
 def find_project_root(start_path: str = __file__, marker: str = ".git") -> Path:
     """
     Find the project root by searching upward for a specified file or folder.

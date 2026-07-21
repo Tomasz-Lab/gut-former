@@ -1,6 +1,6 @@
 import numpy as np
-from scipy.spatial.distance import pdist, squareform
 from scipy.spatial import procrustes
+from scipy.spatial.distance import pdist, squareform
 from skbio.stats.ordination import pcoa
 
 

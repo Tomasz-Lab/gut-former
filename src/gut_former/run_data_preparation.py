@@ -2,8 +2,8 @@ import argparse
 import logging
 
 import pandas as pd
-from utils.project_paths import find_data_path, find_output_path
 from utils.log_config import setup_logging
+from utils.project_paths import find_data_path
 
 log = logging.getLogger(__name__)
 

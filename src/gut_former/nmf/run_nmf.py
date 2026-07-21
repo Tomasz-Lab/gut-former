@@ -1,12 +1,12 @@
-import logging
 import argparse
+import logging
 
 import pandas as pd
 
-from gut_former.utils.project_paths import find_data_path, find_output_path
-from gut_former.utils.log_config import setup_logging
-from gut_former.utils.data_prep import train_val_split, collapse_to_genus, filter_samples
 from gut_former.nmf.nmf_core import run_nmf_loop
+from gut_former.utils.data_prep import collapse_to_genus, filter_samples, train_val_split
+from gut_former.utils.log_config import setup_logging
+from gut_former.utils.project_paths import find_data_path, find_output_path
 
 log = logging.getLogger(__name__)
 

@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torch.nn.functional import mse_loss
 
+
 class CompositeLoss(nn.Module):
     def __init__(self, distance_weight: float = 0.1, variance_weight: float = 0.1):
         super().__init__()
