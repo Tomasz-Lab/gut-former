@@ -4,11 +4,13 @@ import logging
 import pandas as pd
 import torch
 
+from gut_former.config import InferenceConfig
 from gut_former.model import BacteriaModel
 from gut_former.utils.log_config import setup_logging
 from gut_former.utils.project_paths import find_data_path, find_output_path
 
 log = logging.getLogger(__name__)
+
 
 def main():
     # Setting up project
@@ -17,13 +19,15 @@ def main():
     log.info("Starting inference script..\n ")
 
     # Handling Args
+    config = InferenceConfig()
     p = argparse.ArgumentParser()
 
-    p.add_argument("--dataset", type=str, default="sample", help="TODO")
-    p.add_argument("--embedding_dim", type=int, default=128, help="TODO")
-    p.add_argument("--latent_dim", type=int, default=64, help="TODO")
+    p.add_argument("--dataset", type=str, default=config.data.dataset, help="TODO")
+    p.add_argument("--embedding_dim", type=int, default=config.model.embedding_dim, help="TODO")
+    p.add_argument("--latent_dim", type=int, default=config.model.latent_dim, help="TODO")
     output_path = find_output_path()
-    p.add_argument("--checkpoint", type=str, default=f"{output_path}/checkpoint_sample.pt", help="TODO")
+    checkpoint = config.checkpoint or f"{output_path}/checkpoint_sample.pt"
+    p.add_argument("--checkpoint", type=str, default=checkpoint, help="TODO")
     args = p.parse_args()
 
     # Loading & Preparing Data
@@ -72,6 +76,7 @@ def main():
              "  - P_pred:  %s\n"
              "  - T_pred:  %s",
              latent_output_path, p_output_path, t_output_path)
+
 
 if __name__ == "__main__":
     main()

@@ -8,6 +8,7 @@ from torch.nn.functional import mse_loss
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 
+from gut_former.config import TrainingConfig
 from gut_former.dataset import BacteriaDataset
 from gut_former.loss import CompositeLoss
 from gut_former.model import BacteriaModel
@@ -17,35 +18,57 @@ from gut_former.utils.project_paths import find_data_path, find_output_path
 
 log = logging.getLogger(__name__)
 
-def main():
-    # Setting up project
-    setup_logging()
 
-    log.info("Starting training script..\n ")
+def main():
     # Handling Args
 
+    config = TrainingConfig()
     p = argparse.ArgumentParser()
 
-    p.add_argument("--dataset", type=str, default="sample", help="TODO")
-    p.add_argument("--embedding_dim", type=int, default=128, help="TODO")
-    p.add_argument("--latent_dim", type=int, default=64, help="TODO")
-    p.add_argument("--batch_size", type=int, default=16, help="TODO")
-    p.add_argument("--learning_rate", type=float, default=1.893292917167e-4, help="TODO")
-    p.add_argument("--epochs", type=int, default=55, help="TODO")
-    p.add_argument("--verbose", type=bool, default=True, help="TODO")
+    p.add_argument("--dataset", type=str, default=config.data.dataset, help="TODO")
+    p.add_argument("--embedding_dim", type=int, default=config.model.embedding_dim, help="TODO")
+    p.add_argument("--latent_dim", type=int, default=config.model.latent_dim, help="TODO")
+    p.add_argument("--batch_size", type=int, default=config.batch_size, help="TODO")
+    p.add_argument("--learning_rate", type=float, default=config.learning_rate, help="TODO")
+    p.add_argument("--epochs", type=int, default=config.epochs, help="TODO")
+    p.add_argument(
+        "--verbose", action=argparse.BooleanOptionalAction, default=config.verbose, help="TODO"
+    )
 
-    p.add_argument("--checkpoint", type=str, default=None, help="Path to checkpoint to resume training from")
+    p.add_argument(
+        "--checkpoint",
+        type=str,
+        default=config.checkpoint_path,
+        help="Path to checkpoint to resume training from",
+    )
     args = p.parse_args()
+
+    # Setting up project
+    setup_logging(logging.INFO if args.verbose else logging.WARNING)
+
+    log.info("Starting training script..\n ")
 
     today_str = date.today().strftime("%Y%m%d")
     output_path = find_output_path()
-    checkpoint_path = f"{output_path}/{today_str}_{args.dataset}_checkpoint.pt"
+    checkpoint_path = (
+        f"{output_path}/{today_str}_{args.dataset}_{config.model.model_version}_checkpoint.pt"
+    )
     stats_path = f"{output_path}/{today_str}_{args.dataset}_training_stats.csv"
 
     # Loading & Preparing Data
     data_path = find_data_path()
-    Xt_df = pd.read_csv(f"{data_path}/taxonomy_{args.dataset}.csv", index_col=[0], low_memory=False).fillna(0).sort_index() * 100
-    Xp_df = pd.read_csv(f"{data_path}/pathways_{args.dataset}.csv", index_col=[0], low_memory=False).fillna(0).sort_index() * 100
+    Xt_df = (
+        pd.read_csv(f"{data_path}/taxonomy_{args.dataset}.csv", index_col=[0], low_memory=False)
+        .fillna(0)
+        .sort_index()
+        * 100
+    )
+    Xp_df = (
+        pd.read_csv(f"{data_path}/pathways_{args.dataset}.csv", index_col=[0], low_memory=False)
+        .fillna(0)
+        .sort_index()
+        * 100
+    )
 
     Xt_train, Xt_test = train_val_split(Xt_df)
     Xp_train, Xp_test = train_val_split(Xp_df)
@@ -59,7 +82,10 @@ def main():
     # Defining Model
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = BacteriaModel(
-        Xp_df.shape[1], Xt_df.shape[1], args.embedding_dim, args.latent_dim,
+        Xp_df.shape[1],
+        Xt_df.shape[1],
+        args.embedding_dim,
+        args.latent_dim,
     ).to(DEVICE)
 
     optimizer = Adam(model.parameters(), lr=args.learning_rate, weight_decay=0.001)
@@ -73,10 +99,9 @@ def main():
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 
     log.info(
-        "Model summary:\n"
-        "  - Total params:      %d\n"
-        "  - Trainable params:  %d\n",
-        total_params, trainable_params
+        "Model summary:\n  - Total params:      %d\n  - Trainable params:  %d\n",
+        total_params,
+        trainable_params,
     )
 
     # Training Model
@@ -144,19 +169,25 @@ def main():
             torch.save(model.state_dict(), checkpoint_path)
 
     stats_cols = [
-        "epoch", "train_loss", "train_taxonomy_mse", "train_pathways_mse",
-        "test_loss", "test_taxonomy_mse", "test_pathways_mse",
+        "epoch",
+        "train_loss",
+        "train_taxonomy_mse",
+        "train_pathways_mse",
+        "test_loss",
+        "test_taxonomy_mse",
+        "test_pathways_mse",
     ]
 
     stats_df = pd.DataFrame(history, columns=stats_cols)
     stats_df.to_csv(stats_path, index=False)
 
     torch.save(model.state_dict(), checkpoint_path)
-    log.info("\nTraining completed.\n"
-             "Saved outputs:\n"
-             "  - Training stats: %s\n"
-             "  - Model checkpoint: %s\n",
-             stats_path, checkpoint_path)
+    log.info(
+        "\nTraining completed.\nSaved outputs:\n  - Training stats: %s\n  - Model checkpoint: %s\n",
+        stats_path,
+        checkpoint_path,
+    )
+
 
 if __name__ == "__main__":
     main()
