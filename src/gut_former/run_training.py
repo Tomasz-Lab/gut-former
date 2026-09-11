@@ -26,11 +26,33 @@ def main():
     p = argparse.ArgumentParser()
 
     p.add_argument("--dataset", type=str, default=config.data.dataset, help="TODO")
+    p.add_argument(
+        "--taxonomy-file", type=str, default=None, help="Path to taxonomy CSV (overrides --dataset)"
+    )
+    p.add_argument(
+        "--pathways-file", type=str, default=None, help="Path to pathways CSV (overrides --dataset)"
+    )
+    p.add_argument("--split-file", type=str, default=None, help="Path to CSV with split columns")
+    p.add_argument(
+        "--split-column",
+        type=str,
+        default=None,
+        help="Column in --split-file with train/test labels",
+    )
+    p.add_argument(
+        "--run-name", type=str, default=None, help="Output file prefix (defaults to date_dataset)"
+    )
     p.add_argument("--embedding_dim", type=int, default=config.model.embedding_dim, help="TODO")
     p.add_argument("--latent_dim", type=int, default=config.model.latent_dim, help="TODO")
     p.add_argument("--batch_size", type=int, default=config.batch_size, help="TODO")
     p.add_argument("--learning_rate", type=float, default=config.learning_rate, help="TODO")
-    p.add_argument("--epochs", type=int, default=config.epochs, help="TODO")
+    p.add_argument("--epochs", type=int, default=config.epochs, help="Maximum number of epochs")
+    p.add_argument(
+        "--patience",
+        type=int,
+        default=100,
+        help="Early stopping patience (epochs without improvement)",
+    )
     p.add_argument(
         "--verbose", action=argparse.BooleanOptionalAction, default=config.verbose, help="TODO"
     )
@@ -50,28 +72,33 @@ def main():
 
     today_str = date.today().strftime("%Y%m%d")
     output_path = find_output_path()
-    checkpoint_path = (
-        f"{output_path}/{today_str}_{args.dataset}_{config.model.model_version}_checkpoint.pt"
-    )
-    stats_path = f"{output_path}/{today_str}_{args.dataset}_training_stats.csv"
+    run_name = args.run_name or f"{today_str}_{args.dataset}_{config.model.model_version}"
+    checkpoint_path = f"{output_path}/{run_name}_checkpoint.pt"
+    stats_path = f"{output_path}/{run_name}_training_stats.csv"
 
     # Loading & Preparing Data
     data_path = find_data_path()
-    Xt_df = (
-        pd.read_csv(f"{data_path}/taxonomy_{args.dataset}.csv", index_col=[0], low_memory=False)
-        .fillna(0)
-        .sort_index()
-        * 100
-    )
-    Xp_df = (
-        pd.read_csv(f"{data_path}/pathways_{args.dataset}.csv", index_col=[0], low_memory=False)
-        .fillna(0)
-        .sort_index()
-        * 100
-    )
+    taxonomy_file = args.taxonomy_file or f"{data_path}/taxonomy_{args.dataset}.csv"
+    pathways_file = args.pathways_file or f"{data_path}/pathways_{args.dataset}.csv"
+    Xt_df = pd.read_csv(taxonomy_file, index_col=[0], low_memory=False).fillna(0).sort_index() * 100
+    Xp_df = pd.read_csv(pathways_file, index_col=[0], low_memory=False).fillna(0).sort_index() * 100
 
-    Xt_train, Xt_test = train_val_split(Xt_df)
-    Xp_train, Xp_test = train_val_split(Xp_df)
+    if bool(args.split_file) != bool(args.split_column):
+        raise ValueError("--split-file and --split-column must be given together")
+
+    split = None
+    if args.split_file:
+        split = pd.read_csv(args.split_file, index_col=0, low_memory=False)[args.split_column]
+        log.info(
+            "Using predefined split %r from %s: %d train, %d test",
+            args.split_column,
+            args.split_file,
+            (split == "train").sum(),
+            (split == "test").sum(),
+        )
+
+    Xt_train, Xt_test = train_val_split(Xt_df, split=split)
+    Xp_train, Xp_test = train_val_split(Xp_df, split=split)
 
     train_dataset = BacteriaDataset(Xt_train, Xp_train)
     train_dloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
@@ -106,6 +133,8 @@ def main():
 
     # Training Model
     history = []
+    best_val_loss = float("inf")
+    epochs_without_improvement = 0
     for epoch in range(args.epochs):
         model.train()
 
@@ -166,7 +195,18 @@ def main():
 
         if epoch % 10 == 1:
             log.info(f"Epoch: {epoch} -> Test Loss: {test_loss:.3f}")
+
+        if epoch_metrics["test_loss"] < best_val_loss:
+            best_val_loss = epoch_metrics["test_loss"]
+            epochs_without_improvement = 0
             torch.save(model.state_dict(), checkpoint_path)
+        else:
+            epochs_without_improvement += 1
+            if epochs_without_improvement >= args.patience:
+                log.info(
+                    "Early stopping at epoch %d (best validation loss: %.6f)", epoch, best_val_loss
+                )
+                break
 
     stats_cols = [
         "epoch",
@@ -181,7 +221,6 @@ def main():
     stats_df = pd.DataFrame(history, columns=stats_cols)
     stats_df.to_csv(stats_path, index=False)
 
-    torch.save(model.state_dict(), checkpoint_path)
     log.info(
         "\nTraining completed.\nSaved outputs:\n  - Training stats: %s\n  - Model checkpoint: %s\n",
         stats_path,
