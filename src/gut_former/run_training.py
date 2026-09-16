@@ -42,6 +42,14 @@ def main():
     p.add_argument(
         "--run-name", type=str, default=None, help="Output file prefix (defaults to date_dataset)"
     )
+    p.add_argument(
+        "--pathways-scale",
+        type=float,
+        default=100.0,
+        help="Multiplier applied to pathway CSV values. The default 100 reproduces the "
+        "original behaviour; the supplied CSVs already carry the preprint's x10 "
+        "functional factor, which was calibrated for a 398-pathway vocabulary.",
+    )
     p.add_argument("--embedding_dim", type=int, default=config.model.embedding_dim, help="TODO")
     p.add_argument("--latent_dim", type=int, default=config.model.latent_dim, help="TODO")
     p.add_argument("--batch_size", type=int, default=config.batch_size, help="TODO")
@@ -81,7 +89,10 @@ def main():
     taxonomy_file = args.taxonomy_file or f"{data_path}/taxonomy_{args.dataset}.csv"
     pathways_file = args.pathways_file or f"{data_path}/pathways_{args.dataset}.csv"
     Xt_df = pd.read_csv(taxonomy_file, index_col=[0], low_memory=False).fillna(0).sort_index() * 100
-    Xp_df = pd.read_csv(pathways_file, index_col=[0], low_memory=False).fillna(0).sort_index() * 100
+    Xp_df = (
+        pd.read_csv(pathways_file, index_col=[0], low_memory=False).fillna(0).sort_index()
+        * args.pathways_scale
+    )
 
     if bool(args.split_file) != bool(args.split_column):
         raise ValueError("--split-file and --split-column must be given together")
