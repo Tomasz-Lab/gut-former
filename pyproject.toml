@@ -19,6 +19,10 @@ seaborn = "^0.13.2"
 torchmetrics = "^1.8.2"
 scikit-bio = "^0.7.2"
 optuna = "^4.7.0"
+phate = "^2.0.0"
+plotly = "^7.1.0"
+adjusttext = "^1.4.0"
+kaleido = "^1.4.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
