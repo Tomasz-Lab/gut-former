@@ -14,7 +14,10 @@ log = logging.getLogger(__name__)
 def load_data(data_type: str, dataset: str, subset: str) -> pd.DataFrame:
     """Load and preprocess input data based on data type."""
     data_path = find_data_path()
-    metadata = pd.read_csv(f"{data_path}/metadata_{dataset}.csv", index_col=0, low_memory=False).sort_index()
+    metadata = pd.read_csv(f"{data_path}/metadata_{dataset}.csv", index_col=0, low_memory=False)
+    if "sample_id" in metadata.columns:
+        metadata = metadata.set_index("sample_id")
+    metadata = metadata.sort_index()
 
     if data_type == "pathways":
         df = pd.read_csv(f"{data_path}/pathways_{dataset}.csv", index_col=0, low_memory=False).fillna(0).sort_index() * 100

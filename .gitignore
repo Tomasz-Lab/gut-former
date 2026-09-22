@@ -54,6 +54,8 @@ temp/
 # Ana's notebooks
 anas-ntbs/
 
+zuza-figures/
+
 # WIP scripts
 src/gut_former/run_data_preparation.py
 
