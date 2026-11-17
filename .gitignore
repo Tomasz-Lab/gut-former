@@ -55,7 +55,7 @@ temp/
 anas-ntbs/
 
 # WIP scripts
-src/microbiome_gpt/run_data_preparation.py
+src/gut_former/run_data_preparation.py
 
 # Personal notes
 TODO.md
